@@ -35,7 +35,12 @@ function isBot(username) {
     return BOT_LIST.has(lower) || lower.endsWith('bot') || lower.includes('_bot');
 }
 
-app.use(cors());
+app.use(cors({
+    origin: true, // Reflects the request origin, effectively allowing all
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 app.use(express.json());
 
 // Health Check for Render
