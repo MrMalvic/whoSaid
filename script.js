@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://whosaid.onrender.com';
 
 const messageEl = document.getElementById('chat-message');
 const optionsGrid = document.getElementById('options-grid');
@@ -415,7 +415,7 @@ init();
 function openRoadmap() {
     const modal = document.getElementById('roadmap-modal');
     // Remove hidden class if present
-    modal.classList.remove('hidden'); 
+    modal.classList.remove('hidden');
     // Small timeout to allow transition
     requestAnimationFrame(() => {
         modal.classList.add('active');
