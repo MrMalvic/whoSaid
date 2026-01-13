@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Said?</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Logo styling */
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .logo img {
+            height: 2.5rem;
+            margin: 0 -4px;
+        }
+
+        /* Quiz Selection Screen */
+        .quiz-selection {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .quiz-selection h2 {
+            color: var(--twitch-purple);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Main Layout Adjustments */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1800px !important;
+            /* Make it HUGE */
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .quiz-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            /* Fixed 3 columns */
+            gap: 2.5rem;
+            /* Bigger gap */
+            width: 100%;
+            margin: 2rem auto 4rem;
+        }
+
+        @media (max-width: 1200px) {
+            .quiz-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quiz-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-card {
+            background: rgba(30, 30, 35, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .quiz-card:hover {
+            border-color: var(--twitch-purple);
+            transform: translateY(-4px);
+        }
+
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .quiz-emote {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .quiz-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            line-height: 1.2;
+        }
+
+        .quiz-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .quiz-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 0.75rem;
+        }
+
+
+
+        .new-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .no-quizzes {
+            color: var(--text-secondary);
+            padding: 2rem;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        /* Restart Button */
+        .restart-btn {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+
+        .restart-btn:hover {
+            background: var(--twitch-purple);
+            border-color: var(--twitch-purple);
+        }
+
+        /* Made By Footer */
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+        }
+
+        /* Roadmap Modal */
+        .roadmap-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .roadmap-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .roadmap-content {
+            background: #18181b;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .roadmap-overlay.active .roadmap-content {
+            transform: translateY(0);
+        }
+
+        .roadmap-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .roadmap-list li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #d1d5db;
+        }
+
+        .roadmap-list li::before {
+            content: "•";
+            color: var(--twitch-purple);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .close-roadmap-btn {
+            background: var(--bg-hover);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .close-roadmap-btn:hover {
+            background: #3f3f46;
+        }
+
+
+
+        footer a {
+            color: var(--twitch-purple);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .voting-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .vote-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .vote-buttons button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .vote-buttons button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .vote-buttons button:active {
+            transform: translateY(0);
+        }
+
+        /* Back button */
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--twitch-purple);
+            color: var(--twitch-purple);
+        }
+
+        .explanation {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .tagline {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: auto;
+            padding: 1rem;
+            font-style: italic;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">
+                wh<img src="https://cdn.7tv.app/emote/01F61A5FBG000991F7SWQNMCG6/4x.webp" alt="o">said?
+            </h1>
+        </header>
+
+        <!-- Quiz Selection Screen -->
+        <div id="quiz-selection" class="quiz-selection">
+            <div class="explanation">
+                <p>Can you guess what someone in chat said?</p>
+            </div>
+            <h2>Categories</h2>
+            <div id="quiz-list" class="quiz-list">
+                <p class="no-quizzes">Loading quizzes...</p>
+            </div>
+        </div>
+
+        <!-- Game Area (hidden initially) -->
+        <main id="game-area" class="hidden">
+            <button class="back-btn" onclick="showQuizSelection()">← Back to Quizzes</button>
+
+            <div class="message-box">
+                <span class="quote">"</span>
+                <p id="chat-message">Loading today's weirdness...</p>
+                <span class="quote">"</span>
+            </div>
+
+            <p class="instruction">NAH, WHO SAID THIS? <img
+                    src="https://cdn.7tv.app/emote/01JWM0TCY3D63TYXH9D8E5GPE8/4x.webp" alt="Huh"
+                    style="height:1.5em; vertical-align:middle; margin:0 4px;"></p>
+
+            <div id="options-grid" class="options-grid">
+                <!-- Options injected by JS -->
+            </div>
+
+            <div id="result-area" class="hidden">
+                <h2 id="result-title"></h2>
+                <p id="result-text"></p>
+            </div>
+        </main>
+
+        <!-- End Screen (hidden initially) -->
+        <div id="end-screen" class="hidden"></div>
+
+
+
+
+        <!-- Roadmap Modal -->
+        <div id="roadmap-modal" class="roadmap-overlay" onclick="closeRoadmap(event)">
+            <div class="roadmap-content">
+                <h2 style="color: var(--twitch-purple); margin-top: 0;">Future Plans</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">If y'all like this, i'll add:</p>
+                <ul class="roadmap-list">
+                    <li><strong>Leaderboard:</strong> See who knows the community best</li>
+                    <li><strong>Daily Game:</strong> New challenge every day</li>
+                    <li><strong>More Channels:</strong> Expanding support beyond Zoil</li>
+                </ul>
+                <button class="close-roadmap-btn" onclick="closeRoadmap(event, true)">Close</button>
+            </div>
+        </div>
+        <footer>
+            <div class="voting-section">
+                <span>Should I keep working on this?</span>
+                <div class="vote-buttons">
+                    <button id="vote-like" onclick="submitVote('like')" title="Keep going!">👍 <span
+                            id="likes-count">0</span></button>
+                    <button id="vote-dislike" onclick="submitVote('dislike')" title="Nah stop">👎 <span
+                            id="dislikes-count">0</span></button>
+                </div>
+            </div>
+            <p>Made by <a href="https://twitch.tv/mrmalvic" target="_blank">MrMalvic</a> • <a href="#"
+                    onclick="openRoadmap(); return false;"
+                    style="color: var(--text-secondary); text-decoration: underline; font-size: 0.9rem;">Future
+                    Plans</a></p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

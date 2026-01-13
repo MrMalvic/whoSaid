@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Builder - Who Said Admin</title>
+    <style>
+        :root {
+            --bg-dark: #0e0e10;
+            --bg-card: #18181b;
+            --bg-hover: #26262c;
+            --twitch-purple: #9146ff;
+            --twitch-purple-dark: #772ce8;
+            --accent-green: #00ff7f;
+            --accent-red: #ff4757;
+            --text-primary: #efeff1;
+            --text-secondary: #adadb8;
+            --border-color: #3a3a3d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--twitch-purple-dark), var(--twitch-purple));
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stats span {
+            opacity: 0.9;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Search Section */
+        .search-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-controls input,
+        .search-controls select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .search-controls input:focus,
+        .search-controls select:focus {
+            outline: none;
+            border-color: var(--twitch-purple);
+        }
+
+        .search-controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn {
+            background: var(--twitch-purple);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--twitch-purple-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+        }
+
+        /* Messages List */
+        .messages-list {
+            max-height: 500px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message-item {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .message-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--twitch-purple);
+        }
+
+        .message-item.selected {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 127, 0.1);
+        }
+
+        .message-sender {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-sender .badges {
+            display: flex;
+            gap: 4px;
+        }
+
+        .message-sender .badges img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .message-sender .name {
+            font-weight: 600;
+        }
+
+        .message-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Quiz Builder */
+        .quiz-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-meta input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .question-item {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 0.75rem;
+            position: relative;
+        }
+
+        .question-item .num {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: var(--twitch-purple);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .question-item .remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--accent-red);
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .question-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .question-sender {
+            font-size: 0.75rem;
+            color: var(--twitch-purple);
+            margin-left: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .quiz-actions .btn {
+            flex: 1;
+        }
+
+        /* Distractor Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 500px;
+            max-width: 90vw;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+        }
+
+        .distractor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .distractor-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .distractor-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .distractor-item.selected {
+            border-color: var(--accent-green);
+        }
+
+        .distractor-item .badges {
+            display: flex;
+            gap: 4px;
+        }
+
+        .distractor-item .badges img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Quizzes List */
+        .quizzes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quiz-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+        }
+
+        .quiz-list-item.active {
+            border: 1px solid var(--accent-green);
+        }
+
+        .quiz-list-item .info {
+            flex: 1;
+        }
+
+        .quiz-list-item .title {
+            font-weight: 600;
+        }
+
+        .quiz-list-item .meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .quiz-list-item .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .quiz-list-item .actions button {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>🎮 Quiz Builder</h1>
+        <div class="stats">
+            <span>📊 Chatters: <strong id="stat-chatters">-</strong></span>
+            <span>📝 Quizzes: <strong id="stat-quizzes">-</strong></span>
+            <span>✅ Active: <strong id="stat-active">None</strong></span>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Left Panel: Search & Messages -->
+        <div class="panel">
+            <h2 class="panel-title">🔍 Advanced Log Search</h2>
+            <div class="search-controls">
+                <input type="text" id="search-query" placeholder="Search keyword (optional)" style="flex: 2;">
+                <input type="text" id="search-user" placeholder="User (optional)" style="flex: 1;">
+            </div>
+            <div class="search-controls" style="margin-top: 0.5rem;">
+                <label style="font-size: 0.85rem; color: var(--text-secondary);">From:</label>
+                <input type="date" id="search-from" style="flex: 1;">
+                <label style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 0.5rem;">To:</label>
+                <input type="date" id="search-to" style="flex: 1;">
+                <button class="btn" onclick="searchLogs()">Search</button>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="setPreset(7)">Past 7 Days</button>
+                <button class="btn btn-secondary" onclick="setPreset(30)">Past 30 Days</button>
+                <button class="btn btn-secondary" onclick="setPreset(90)">Past 90 Days</button>
+                <button class="btn btn-secondary" onclick="loadRecentLogs()">Recent (Today)</button>
+            </div>
+            <div id="search-status" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;"></div>
+            <div id="messages-container" class="messages-list">
+                <div class="empty-state">Enter a search query and select a date to browse chat logs</div>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border-color);">
+
+            <h2 class="panel-title">✍️ Manual Entry</h2>
+            <div class="search-controls">
+                <input type="text" id="manual-user" placeholder="Username" style="width: 150px;">
+                <input type="text" id="manual-msg" placeholder="Message text" style="flex: 1;">
+                <button class="btn btn-secondary" onclick="addManualEntry()">Add</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Quiz Builder -->
+        <div class="panel">
+            <h2 class="panel-title">🏗️ Build Quiz</h2>
+            <div class="quiz-meta">
+                <input type="text" id="quiz-title" placeholder="Quiz Title (e.g., January 2026 Special)">
+                <input type="text" id="quiz-desc" placeholder="Description (optional)">
+                <input type="text" id="quiz-emote" placeholder="Emote/Image URL (optional)">
+            </div>
+            <div id="questions-container" class="question-list">
+                <div class="empty-state" style="padding: 1rem;">Click messages on the left to add questions (need 10)
+                </div>
+            </div>
+            <div class="quiz-actions">
+                <button class="btn btn-secondary" onclick="clearQuiz()">Clear</button>
+                <button class="btn btn-success" onclick="saveQuiz()" id="save-btn" disabled>Save Quiz (0/10)</button>
+            </div>
+
+            <h3 class="panel-title" style="margin-top: 1.5rem;">📚 Saved Quizzes</h3>
+            <div id="quizzes-container" class="quizzes-list">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Distractor Selection Modal -->
+    <div id="distractor-modal" class="modal-overlay">
+        <div class="modal">
+            <h3>Select 3 Distractors</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                These are random chatters from the database. Click to toggle selection.
+            </p>
+            <div id="distractors-list" class="distractor-list"></div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-success" onclick="confirmDistractors()" id="confirm-distractors-btn"
+                    style="flex: 1;" disabled>
+                    Add Question (0/3)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let badgeMap = {};
+        let questions = [];
+        let currentMessage = null;
+        let selectedDistractors = [];
+        let availableDistractors = [];
+
+        // Initialize
+        async function init() {
+            await loadBadges();
+            await loadStats();
+            await loadQuizzes();
+            await loadRecentLogs(); // Fetch recent logs on startup
+        }
+
+        async function loadBadges() {
+            try {
+                const res = await fetch(`${API_URL}/badges-mapping`);
+                badgeMap = await res.json();
+            } catch (err) {
+                console.warn('Failed to load badges:', err);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/stats`);
+                const stats = await res.json();
+                document.getElementById('stat-chatters').textContent = stats.totalChatters || 0;
+                document.getElementById('stat-quizzes').textContent = stats.totalQuizzes || 0;
+                document.getElementById('stat-active').textContent = stats.activeQuiz || 'None';
+            } catch (err) {
+                console.warn('Failed to load stats:', err);
+            }
+        }
+
+        async function loadQuizzes() {
+            try {
+                const res = await fetch(`${API_URL}/api/quizzes`);
+                const quizzes = await res.json();
+                renderQuizzesList(quizzes);
+            } catch (err) {
+                document.getElementById('quizzes-container').innerHTML =
+                    '<div class="empty-state">Failed to load quizzes</div>';
+            }
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "just now";
+        }
+
+        async function loadRecentLogs() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '<div class="loading">Loading recent chat logs...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/logs/recent`);
+                const data = await res.json();
+
+                if (data.messages.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No recent messages found</div>';
+                    return;
+                }
+
+                renderMessages(data.messages);
+            } catch (err) {
+                container.innerHTML = '<div class="empty-state">Failed to load recent logs</div>';
+            }
+        }
+
+        function renderQuizzesList(quizzes) {
+            const container = document.getElementById('quizzes-container');
+            if (quizzes.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 1rem;">No quizzes yet</div>';
+                return;
+            }
+
+            container.innerHTML = quizzes.map(q => `
+                <div class="quiz-list-item ${q.isActive ? 'active' : ''}">
+                    <div class="info">
+                        <div class="title">${q.title} ${q.isActive ? '✅ (Public)' : '🔒 (Draft)'}</div>
+                        <div class="meta">${q.questionCount} questions • ${timeAgo(q.createdAt)}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn ${q.isActive ? 'btn-secondary' : 'btn-success'}" onclick="toggleQuiz('${q._id}')">
+                            ${q.isActive ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteQuiz('${q._id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setPreset(days) {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - days);
+
+            document.getElementById('search-from').value = start.toISOString().split('T')[0];
+            document.getElementById('search-to').value = end.toISOString().split('T')[0];
+        }
+
+        async function searchLogs() {
+            const query = document.getElementById('search-query').value;
+            const user = document.getElementById('search-user').value;
+            const from = document.getElementById('search-from').value;
+            const to = document.getElementById('search-to').value;
+
+            if (!from || !to) {
+                alert('Please select a date range or use a preset button');
+                return;
+            }
+
+            const container = document.getElementById('messages-container');
+            const statusEl = document.getElementById('search-status');
+            container.innerHTML = '<div class="loading">Searching... (this may take a while for large ranges)</div>';
+            statusEl.textContent = 'Fetching logs...';
+
+            try {
+                let url = `${API_URL}/api/logs/search?from=${from}&to=${to}`;
+                if (query) url += `&q=${encodeURIComponent(query)}`;
+                if (user) url += `&user=${encodeURIComponent(user)}`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.error) {
+                    container.innerHTML = '<div class="empty-state">' + data.error + '</div>';
+                    statusEl.textContent = '';
+                    return;
+                }
+
+                statusEl.textContent = `Found ${data.total} messages across ${data.daysSearched} days`;
+
+                if (data.messages.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No messages found</div>';
+                    return;
+                }
+
+                renderMessages(data.messages);
+            } catch (err) {
+                container.innerHTML = '<div class="empty-state">Search failed: ' + err.message + '</div>';
+                statusEl.textContent = '';
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = messages.map(msg => `
+                <div class="message-item" onclick="selectMessage(${JSON.stringify(msg).replace(/"/g, '&quot;')})">
+                    <div class="message-sender">
+                        <div class="badges">${renderBadges(msg.sender.badges)}</div>
+                        <span class="name" style="color: ${msg.sender.color}">${msg.sender.name}</span>
+                        ${msg.timestamp ? `<span style="font-size:0.75em; color:var(--text-secondary); margin-left:auto">${timeAgo(msg.timestamp)}</span>` : ''}
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.message)}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderBadges(badges) {
+            if (!badges) return '';
+            return Object.entries(badges).map(([key, version]) => {
+                if (badgeMap[key] && badgeMap[key][version]) {
+                    return `<img src="${badgeMap[key][version]}" alt="${key}">`;
+                }
+                return '';
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function selectMessage(msg) {
+            // Enrich user data from DB
+            await enrichMessage(msg);
+
+            currentMessage = msg;
+            selectedDistractors = [];
+
+            // Add search input to modal if not exists
+            const modal = document.querySelector('.modal');
+            if (!document.getElementById('distractor-search')) {
+                const searchDiv = document.createElement('div');
+                searchDiv.style.marginBottom = '1rem';
+                searchDiv.style.display = 'flex';
+                searchDiv.style.gap = '0.5rem';
+                searchDiv.innerHTML = `
+                    <input type="text" id="distractor-search" placeholder="Search chatter..." style="flex:1; padding:0.5rem; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-dark); color:white;" oninput="searchDistractors()">
+                    <button class="btn btn-secondary" onclick="refreshDistractors()" style="padding:0.5rem;" title="Get new random set">↻</button>
+                    <button class="btn btn-secondary" onclick="pickRandomDistractors()" style="padding:0.5rem;" title="Pick 3 random from list">🎲 Pick 3</button>
+                `;
+                // Insert after h3
+                modal.insertBefore(searchDiv, modal.children[1]); // Assuming h3 is first child
+
+                // Add enter key listener
+                document.getElementById('distractor-search').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') searchDistractors();
+                });
+            } else {
+                // Clear previous search
+                document.getElementById('distractor-search').value = '';
+            }
+
+            refreshDistractors();
+        }
+
+        async function enrichMessage(msg) {
+            try {
+                const res = await fetch(`${API_URL}/api/user/${msg.sender.name}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    msg.sender.color = data.color || msg.sender.color;
+                    msg.sender.badges = data.badges || msg.sender.badges;
+                    msg.sender.name = data.displayName || msg.sender.name; // Use display name preferred
+                }
+            } catch (err) {
+                console.warn('Failed to enrich user data:', err);
+                // Fallback to existing data
+            }
+        }
+
+        async function refreshDistractors() {
+            const list = document.getElementById('distractors-list');
+            list.innerHTML = '<div class="loading">Loading random distractors...</div>';
+            document.getElementById('distractor-modal').classList.add('active');
+            // selectedDistractors = []; // Don't reset selection on refresh!
+            document.getElementById('distractor-search').value = '';
+
+            try {
+                // Initial load: Random distractors
+                const res = await fetch(`${API_URL}/api/users/random?count=10&exclude=${currentMessage.sender.name.toLowerCase()}`);
+                availableDistractors = await res.json();
+
+                if (availableDistractors.length < 3) {
+                    list.innerHTML = '<div class="empty-state">Not enough chatters in database. Let the chat listener run first.</div>';
+                    return;
+                }
+
+                renderDistractors();
+            } catch (err) {
+                list.innerHTML = '<div class="empty-state">Failed to load distractors: ' + err.message + '</div>';
+            }
+        }
+
+        let searchTimeout;
+        async function searchDistractors() {
+            const query = document.getElementById('distractor-search').value;
+
+            // If empty, revert to randoms? Or just clear/stay?
+            // Let's reload randoms if empty to restore state
+            if (!query) {
+                if (availableDistractors.length < 5) refreshDistractors();
+                return;
+            }
+
+            // Debounce
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const list = document.getElementById('distractors-list');
+                list.innerHTML = '<div class="loading">Searching...</div>';
+
+                try {
+                    const res = await fetch(`${API_URL}/api/users/search?query=${encodeURIComponent(query)}`);
+                    const users = await res.json();
+
+                    // Keep selected ones?
+                    // For simplicity, we just show search results. User can add them to selection.
+                    // But we must preserve the 'availableDistractors' array to include selected ones so they don't break.
+
+                    availableDistractors = users;
+                    // Don't reset selection - let user accumulate picks across searches
+
+                    if (availableDistractors.length === 0) {
+                        list.innerHTML = '<div class="empty-state">No users found</div>';
+                    } else {
+                        renderDistractors();
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }, 300);
+        }
+
+        function pickRandomDistractors() {
+            selectedDistractors = [];
+            // Pick 3 random user objects from availableDistractors
+            if (availableDistractors.length < 3) return;
+
+            const shuffled = [...availableDistractors].sort(() => Math.random() - 0.5);
+            selectedDistractors = shuffled.slice(0, 3);
+            renderDistractors();
+        }
+
+        function renderDistractors() {
+            const list = document.getElementById('distractors-list');
+
+            // Show selected users first (highlighted), then available ones
+            const selectedNames = selectedDistractors.map(d => d.name.toLowerCase());
+            const available = availableDistractors.filter(d => !selectedNames.includes(d.name.toLowerCase()));
+            const toShow = available.slice(0, 50);
+
+            let html = '';
+
+            // Render selected users at top
+            if (selectedDistractors.length > 0) {
+                html += '<div style="margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Selected (' + selectedDistractors.length + '/3):</div>';
+                html += selectedDistractors.map(d => `
+                    <div class="distractor-item selected" onclick="toggleDistractorByName('${d.name}')">
+                        <div class="badges">${renderBadges(d.badges)}</div>
+                        <span style="color: ${d.color}">${d.name}</span>
+                        <span style="margin-left: auto; font-size: 0.8rem;">✓</span>
+                    </div>
+                `).join('');
+                html += '<hr style="margin: 0.5rem 0; border: 0; border-top: 1px solid var(--border-color);">';
+            }
+
+            // Render available users
+            html += toShow.map(d => `
+                <div class="distractor-item" onclick="toggleDistractorByName('${d.name}')">
+                    <div class="badges">${renderBadges(d.badges)}</div>
+                    <span style="color: ${d.color}">${d.name}</span>
+                </div>
+            `).join('');
+
+            list.innerHTML = html;
+            updateDistractorBtn();
+        }
+
+        function toggleDistractorByName(name) {
+            const idx = selectedDistractors.findIndex(d => d.name.toLowerCase() === name.toLowerCase());
+            if (idx > -1) {
+                // Deselect
+                selectedDistractors.splice(idx, 1);
+            } else if (selectedDistractors.length < 3) {
+                // Select - find user in availableDistractors or selectedDistractors
+                const user = availableDistractors.find(d => d.name.toLowerCase() === name.toLowerCase());
+                if (user) selectedDistractors.push(user);
+            }
+            renderDistractors();
+        }
+
+        function updateDistractorBtn() {
+            const btn = document.getElementById('confirm-distractors-btn');
+            btn.disabled = selectedDistractors.length !== 3;
+            btn.textContent = `Add Question (${selectedDistractors.length}/3)`;
+        }
+
+        function closeModal() {
+            document.getElementById('distractor-modal').classList.remove('active');
+            currentMessage = null;
+            selectedDistractors = [];
+        }
+
+        function confirmDistractors() {
+            if (selectedDistractors.length !== 3 || !currentMessage) return;
+
+            // selectedDistractors now contains actual user objects
+            const distractors = selectedDistractors;
+
+            questions.push({
+                message: currentMessage.message,
+                sender: currentMessage.sender,
+                distractors: distractors,
+                sourceMessageId: currentMessage.id
+            });
+
+            closeModal();
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            const saveBtn = document.getElementById('save-btn');
+
+            if (questions.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 1rem;">Click messages on the left to add questions (need 10)</div>';
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Save Quiz (0/10)';
+                return;
+            }
+
+            container.innerHTML = questions.map((q, i) => `
+                <div class="question-item">
+                    <span class="num">${i + 1}</span>
+                    <button class="remove" onclick="removeQuestion(${i})">×</button>
+                    <div class="question-text">${escapeHtml(q.message)}</div>
+                    <div class="question-sender">— ${q.sender.name}</div>
+                </div>
+            `).join('');
+
+            saveBtn.disabled = questions.length < 1;
+            saveBtn.textContent = `Save Quiz (${questions.length}/10)`;
+        }
+
+        function removeQuestion(index) {
+            questions.splice(index, 1);
+            renderQuestions();
+        }
+
+        function clearQuiz() {
+            questions = [];
+            document.getElementById('quiz-title').value = '';
+            document.getElementById('quiz-desc').value = '';
+            document.getElementById('quiz-emote').value = '';
+            renderQuestions();
+        }
+
+        async function saveQuiz() {
+            const title = document.getElementById('quiz-title').value.trim();
+            if (!title) {
+                alert('Please enter a quiz title');
+                return;
+            }
+
+            if (questions.length < 1) {
+                alert('Please add at least 1 question');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/quiz`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        description: document.getElementById('quiz-desc').value.trim(),
+                        emoteUrl: document.getElementById('quiz-emote').value.trim(),
+                        questions
+                    })
+                });
+
+                if (!res.ok) throw new Error('Failed to save');
+
+                alert('Quiz saved successfully!');
+                clearQuiz();
+                await loadQuizzes();
+                await loadStats();
+            } catch (err) {
+                alert('Failed to save quiz: ' + err.message);
+            }
+        }
+
+
+        function addManualEntry() {
+            const username = document.getElementById('manual-user').value.trim();
+            const text = document.getElementById('manual-msg').value.trim();
+
+            if (!username || !text) {
+                alert('Both username and message are required');
+                return;
+            }
+
+            const syntheticMsg = {
+                id: 'manual_' + Date.now(),
+                message: text,
+                sender: {
+                    name: username,
+                    color: '#9146FF', // Default purple
+                    badges: {} // No badges by default
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            // Clear inputs
+            document.getElementById('manual-user').value = '';
+            document.getElementById('manual-msg').value = '';
+
+            selectMessage(syntheticMsg);
+        }
+
+        async function toggleQuiz(id) {
+            try {
+                await fetch(`${API_URL}/api/quiz/${id}/toggle`, { method: 'POST' });
+                await loadQuizzes();
+                await loadStats();
+            } catch (err) {
+                alert('Failed to toggle quiz status');
+            }
+        }
+
+        async function deleteQuiz(id) {
+            if (!confirm('Are you sure you want to delete this quiz?')) return;
+
+            try {
+                await fetch(`${API_URL}/api/quiz/${id}`, { method: 'DELETE' });
+                await loadQuizzes();
+                await loadStats();
+            } catch (err) {
+                alert('Failed to delete quiz');
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
