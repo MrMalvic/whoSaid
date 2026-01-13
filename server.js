@@ -299,7 +299,7 @@ app.get('/api/logs/recent', async (req, res) => {
 // Query params: q (search term), from (YYYY-MM-DD), to (YYYY-MM-DD), limit (default 200)
 app.get('/api/logs/search', async (req, res) => {
     try {
-        const { q, from, to, limit = 1000 } = req.query;
+        const { q, from, to, limit = 1000, user } = req.query;
 
         if (!from || !to) {
             return res.status(400).json({ error: 'from and to dates are required (YYYY-MM-DD)' });
@@ -351,40 +351,40 @@ app.get('/api/logs/search', async (req, res) => {
                         responseType: 'text'
                     });
 
-                    const messages = parseIvrLogs(response.data);
+                    let messages = parseIvrLogs(response.data);
+
+                    // OPTIMIZATION: Filter immediately to save memory
+                    // Filter by user
+                    if (user) {
+                        const targetUser = user.toLowerCase();
+                        messages = messages.filter(msg => msg.username === targetUser);
+                    }
+
+                    // Filter by query
+                    if (q) {
+                        const lowerQuery = q.toLowerCase();
+                        messages = messages.filter(msg => msg.message.toLowerCase().includes(lowerQuery));
+                    }
+
+                    // Filter bots
+                    messages = messages.filter(msg => !isBot(msg.username));
+
                     allMessages.push(...messages);
                     daysSearched.push(`${year}-${month}-${day}`);
                 } catch (err) {
                     // Day might not exist, skip
+                    // console.error(`Error fetching logs for ${year}-${month}-${day}:`, err.message);
                 }
             }));
         }
 
-        // Filter by user (exact match, case insensitive)
-        const { user } = req.query;
-        let filtered = allMessages;
-
-        if (user) {
-            const targetUser = user.toLowerCase();
-            filtered = filtered.filter(msg => msg.username === targetUser);
-        }
-
-        // Filter by search query (fuzzy/substring)
-        if (q) {
-            const lowerQuery = q.toLowerCase();
-            filtered = filtered.filter(msg =>
-                msg.message.toLowerCase().includes(lowerQuery)
-            );
-        }
-
-        // Filter out bots
-        filtered = filtered.filter(msg => !isBot(msg.username));
-
         // Sort by timestamp descending
-        filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        allMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         // Transform to our format
-        const results = filtered.slice(0, parseInt(limit)).map(msg => ({
+        let filtered = allMessages; // Renaming for consistency with remaining code logic if needed, or just use allMessages directly.
+        // Actually, the previous code filtered `allMessages` -> `filtered`. Now `allMessages` IS the filtered list.
+        const results = allMessages.slice(0, parseInt(limit)).map(msg => ({
             id: `${msg.timestamp}-${msg.username}`,
             message: msg.message,
             sender: {
