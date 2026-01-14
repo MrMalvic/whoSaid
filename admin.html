@@ -500,12 +500,13 @@
     </div>
 
     <script>
-        const API_URL = 'https://whosaid.onrender.com';
+        const API_URL = 'http://localhost:3000';
         let badgeMap = {};
         let questions = [];
         let currentMessage = null;
         let selectedDistractors = [];
         let availableDistractors = [];
+        let editingQuizId = null;
 
         // Initialize
         async function init() {
@@ -595,6 +596,7 @@
                         <div class="meta">${q.questionCount} questions • ${timeAgo(q.createdAt)}</div>
                     </div>
                     <div class="actions">
+                        <button class="btn btn-secondary" onclick="editQuiz('${q._id}')">Edit</button>
                         <button class="btn ${q.isActive ? 'btn-secondary' : 'btn-success'}" onclick="toggleQuiz('${q._id}')">
                             ${q.isActive ? 'Unpublish' : 'Publish'}
                         </button>
@@ -916,9 +918,15 @@
 
         function clearQuiz() {
             questions = [];
+            editingQuizId = null;
             document.getElementById('quiz-title').value = '';
             document.getElementById('quiz-desc').value = '';
             document.getElementById('quiz-emote').value = '';
+
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.textContent = 'Save Quiz (0/10)';
+            // Also reset panel title if we changed it, but currently it's static
+
             renderQuestions();
         }
 
@@ -935,8 +943,11 @@
             }
 
             try {
-                const res = await fetch(`${API_URL}/api/quiz`, {
-                    method: 'POST',
+                const url = editingQuizId ? `${API_URL}/api/quiz/${editingQuizId}` : `${API_URL}/api/quiz`;
+                const method = editingQuizId ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title,
@@ -948,7 +959,7 @@
 
                 if (!res.ok) throw new Error('Failed to save');
 
-                alert('Quiz saved successfully!');
+                alert(editingQuizId ? 'Quiz updated successfully!' : 'Quiz saved successfully!');
                 clearQuiz();
                 await loadQuizzes();
                 await loadStats();
@@ -992,6 +1003,32 @@
                 await loadStats();
             } catch (err) {
                 alert('Failed to toggle quiz status');
+            }
+        }
+
+        async function editQuiz(id) {
+            try {
+                const res = await fetch(`${API_URL}/api/quiz/${id}`);
+                const quiz = await res.json();
+
+                if (quiz.error) throw new Error(quiz.error);
+
+                // Populate fields
+                editingQuizId = quiz._id;
+                document.getElementById('quiz-title').value = quiz.title;
+                document.getElementById('quiz-desc').value = quiz.description || '';
+                document.getElementById('quiz-emote').value = quiz.emoteUrl || '';
+                questions = quiz.questions;
+
+                // Update UI
+                renderQuestions();
+                document.getElementById('save-btn').textContent = `Update Quiz (${questions.length}/10)`;
+
+                // Scroll to builder
+                document.querySelector('.question-list').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                alert('Failed to load quiz for editing: ' + err.message);
             }
         }
 

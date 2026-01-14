@@ -1,4 +1,4 @@
-const API_URL = 'https://whosaid.onrender.com';
+const API_URL = 'http://localhost:3000';
 
 const messageEl = document.getElementById('chat-message');
 const optionsGrid = document.getElementById('options-grid');
@@ -401,7 +401,7 @@ function showFinalResults() {
     endScreen.classList.remove('hidden');
 
     document.getElementById('share-btn').onclick = () => {
-        const text = `Daily Zoil Challenge ${new Date().toLocaleDateString()}\nScore: ${score}/${dailyQuestions.length}\n\n${emojiGrid}\n\nPlay here: [link]`;
+        const text = `Someone said challenge ${new Date().toLocaleDateString()}\nScore: ${score}/${dailyQuestions.length}\n\n${emojiGrid}\n\nPlay here: https://someonesaid.onrender.com/`;
         navigator.clipboard.writeText(text).then(() => {
             alert("Copied to clipboard!");
         });
