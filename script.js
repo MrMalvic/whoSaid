@@ -355,8 +355,10 @@ function revealRound(userGuess, actualSender, isCorrect) {
     });
 
     resultArea.classList.remove('hidden');
-    resultTitle.textContent = isCorrect ? "NICE!" : "NOPE.";
-    resultTitle.style.color = isCorrect ? "var(--accent-green)" : "var(--error-red)";
+    resultTitle.innerHTML = isCorrect
+        ? '<img src="https://cdn.7tv.app/emote/01F71VQYHR000D3ZZ6Q11NR7TV/4x.webp" alt="NICE" style="height: 3em;">'
+        : '<img src="https://cdn.7tv.app/emote/01F71VTZ7G0005AHDMTSVHKYH2/4x.webp" alt="NOPE" style="height: 3em;">';
+    // resultTitle.style.color = isCorrect ? "var(--accent-green)" : "var(--error-red)"; // Color no longer needed for images
 
     resultText.innerHTML = '';
     if (!isCorrect && actualSender) {
