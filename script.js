@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://whosaid.onrender.com';
 
 const messageEl = document.getElementById('chat-message');
 const optionsGrid = document.getElementById('options-grid');
