@@ -184,3 +184,18 @@ footer {
     font-size: 0.8rem;
     opacity: 0.5;
 }
+
+@media (max-width: 768px) {
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .message-box {
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .quote {
+        font-size: 2rem;
+    }
+}
