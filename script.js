@@ -181,6 +181,9 @@ async function selectQuiz(quizId) {
             return;
         }
 
+        // Randomize question order
+        quiz.questions.sort(() => Math.random() - 0.5);
+
         // Prepare questions with shuffled options
         dailyQuestions = quiz.questions.map(q => {
             const options = [...q.distractors, q.sender];
